@@ -7,13 +7,15 @@ export async function getAgents(): Promise<Agent[]> {
 }
 
 export function showList(agents: Agent[]) {
-  const tab = '\t';
-  console.log(
-    `AGENTE${tab}NOMBRE${tab}APELLIDO${tab}EMISIÓN${tab}SINIESTROS${tab}BONO`,
+  const rows = agents.map(
+    ({ id, name, lastName, issuance, claims, bonus }) => ({
+      Agente: id,
+      Nombre: name,
+      Apellido: lastName,
+      Emisión: issuance,
+      Siniestros: claims,
+      Bono: bonus,
+    }),
   );
-  for (const agent of agents) {
-    console.log(
-      `${agent.id}${tab}${agent.name}${tab}${agent.lastName}${tab}${agent.issuance}${tab}${agent.claims}${tab}${agent.bonus}`,
-    );
-  }
+  console.table(rows);
 }
