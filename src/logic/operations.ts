@@ -95,11 +95,37 @@ export function calculateClaims(agent: Agent, operations: Operation[]) {
 }
 
 export function calculateBonus(agent: Agent) {
-  return agent.issuance > 0
-    ? Number((agent.issuance / agent.claims).toFixed(2))
-    : 0;
-  // calcular la siniestralidad
-  // detectar donde el intervalo donde cae, lo haria con un switch
-  // dependiendo del porcentaje obtenido obtenemos la cantidad del bono aplicando
-  // la formula Bono = (ME * PB) / 100 sobre el porcentaje obtenido
+  if (agent.issuance === 0) {
+    return 0;
+  }
+  const siniestralidad = (agent.claims / agent.issuance) * 100;
+  let porcentajeBono = 0;
+  if (siniestralidad <= 65) {
+    if (agent.issuance <= 3500) {
+      porcentajeBono = 4;
+    } else if (agent.issuance <= 5000) {
+      porcentajeBono = 5;
+    } else if (agent.issuance <= 5500) {
+      porcentajeBono = 6;
+    } else if (agent.issuance <= 6000) {
+      porcentajeBono = 8;
+    } else {
+      porcentajeBono = 10;
+    }
+  } else {
+    if (agent.issuance <= 3500) {
+      porcentajeBono = 0;
+    } else if (agent.issuance <= 5000) {
+      porcentajeBono = 0;
+    } else if (agent.issuance <= 5500) {
+      porcentajeBono = 1;
+    } else if (agent.issuance <= 6000) {
+      porcentajeBono = 2;
+    } else {
+      porcentajeBono = 3;
+    }
+  }
+  const bono = (agent.issuance * porcentajeBono) / 100;
+
+  return Number(bono.toFixed(2));
 }
