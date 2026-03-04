@@ -99,31 +99,27 @@ export function calculateBonus(agent: Agent) {
     return 0;
   }
   const siniestralidad = (agent.claims / agent.issuance) * 100;
+  const bajaSiniestralidad = siniestralidad <= 65;
   let porcentajeBono = 0;
-  if (siniestralidad <= 65) {
-    if (agent.issuance <= 3500) {
-      porcentajeBono = 4;
-    } else if (agent.issuance <= 5000) {
-      porcentajeBono = 5;
-    } else if (agent.issuance <= 5500) {
-      porcentajeBono = 6;
-    } else if (agent.issuance <= 6000) {
-      porcentajeBono = 8;
-    } else {
-      porcentajeBono = 10;
-    }
-  } else {
-    if (agent.issuance <= 3500) {
-      porcentajeBono = 0;
-    } else if (agent.issuance <= 5000) {
-      porcentajeBono = 0;
-    } else if (agent.issuance <= 5500) {
-      porcentajeBono = 1;
-    } else if (agent.issuance <= 6000) {
-      porcentajeBono = 2;
-    } else {
-      porcentajeBono = 3;
-    }
+  // Nota: el requerimiento define los rangos como "X a Y" sin especificar si el límite
+  // superior es inclusivo o exclusivo. Aquí se tratan como inclusivos en el rango inferior
+  // (ej: issuance === 3500 → 4%, no 5%). Con los datos actuales ningún agente cae
+  // exactamente en los valores límite (3500, 5000, 5500, 6000), por lo que no afecta el resultado.
+  switch (true) {
+    case agent.issuance <= 3500:
+      porcentajeBono = bajaSiniestralidad ? 4 : 0;
+      break;
+    case agent.issuance <= 5000:
+      porcentajeBono = bajaSiniestralidad ? 5 : 0;
+      break;
+    case agent.issuance <= 5500:
+      porcentajeBono = bajaSiniestralidad ? 6 : 1;
+      break;
+    case agent.issuance <= 6000:
+      porcentajeBono = bajaSiniestralidad ? 8 : 2;
+      break;
+    default:
+      porcentajeBono = bajaSiniestralidad ? 10 : 3;
   }
   const bono = (agent.issuance * porcentajeBono) / 100;
 
