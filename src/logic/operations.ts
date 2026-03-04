@@ -16,12 +16,9 @@ function filterByDate(
     return operations;
   }
 
-  return operations.filter((operation) => {
-    const operationTimestamp = new Date(operation.date).getTime();
-    return (
-      operationTimestamp >= startDate.getTime() &&
-      operationTimestamp <= endDate.getTime()
-    );
+  return operations.filter(({ date }) => {
+    const operationDate = new Date(date);
+    return operationDate >= startDate && operationDate <= endDate;
   });
 }
 
@@ -30,17 +27,6 @@ enum OperationEnum {
   Reserve = 'reserve',
   Adjust = 'adjust',
   Deductible = 'deductible',
-}
-
-function filterByOperation(
-  operations: Operation[],
-  operationType: OperationEnum,
-): Operation[] {
-  return operations.filter(({ operation }) => operation === operationType);
-}
-
-function sumOperationsAmount(operations: Operation[]) {
-  return operations.reduce((acc, curr) => acc + Number(curr.amount), 0);
 }
 
 export async function getIssuance(
@@ -71,27 +57,29 @@ export function calculateIssuance(agent: Agent, operations: Operation[]) {
 }
 
 export function calculateClaims(agent: Agent, operations: Operation[]) {
-  const reserveOperations = filterByOperation(
-    operations,
-    OperationEnum.Reserve,
-  );
-  const adjustOperations = filterByOperation(operations, OperationEnum.Adjust);
-  const deductibleOperations = filterByOperation(
-    operations,
-    OperationEnum.Deductible,
-  );
-  const recoveryOperations = filterByOperation(
-    operations,
-    OperationEnum.Recovery,
-  );
-  const reserveSum = sumOperationsAmount(reserveOperations);
-  const adjustSum = sumOperationsAmount(adjustOperations);
-  const deductibleSum = sumOperationsAmount(deductibleOperations);
-  const recoverySum = sumOperationsAmount(recoveryOperations);
+  let reserve = 0;
+  let adjust = 0;
+  let deductible = 0;
+  let recovery = 0;
 
-  return Number(
-    (reserveSum + adjustSum - deductibleSum - recoverySum).toFixed(2),
-  );
+  for (const op of operations) {
+    switch (op.operation) {
+      case OperationEnum.Reserve:
+        reserve += Number(op.amount);
+        break;
+      case OperationEnum.Adjust:
+        adjust += Number(op.amount);
+        break;
+      case OperationEnum.Deductible:
+        deductible += Number(op.amount);
+        break;
+      case OperationEnum.Recovery:
+        recovery += Number(op.amount);
+        break;
+    }
+  }
+
+  return Number((reserve + adjust - deductible - recovery).toFixed(2));
 }
 
 export function calculateBonus(agent: Agent) {
